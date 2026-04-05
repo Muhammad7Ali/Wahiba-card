@@ -387,25 +387,35 @@
 </audio>
 
 <script>
-  // Try autoplay muted first, unmute on first user interaction
-  const music = document.getElementById('bgMusic');
-  music.volume = 0.5;
+  window.addEventListener('load', function () {
+    const music = document.getElementById('bgMusic');
+    music.volume = 0.6;
+    let played = false;
 
-  function tryPlay() {
-    music.muted = false;
-    music.play().catch(() => {});
-  }
+    function startMusic() {
+      if (played) return;
+      played = true;
+      music.muted = false;
+      music.play().catch(function(e) { console.log('play error:', e); });
+    }
 
-  // Attempt autoplay
-  music.muted = true;
-  music.play().then(() => {
-    // Autoplay worked (muted) — unmute on first touch/click
-    document.addEventListener('click', tryPlay, { once: true });
-    document.addEventListener('touchstart', tryPlay, { once: true });
-  }).catch(() => {
-    // Autoplay blocked entirely — wait for interaction
-    document.addEventListener('click', tryPlay, { once: true });
-    document.addEventListener('touchstart', tryPlay, { once: true });
+    // Try muted autoplay first
+    music.muted = true;
+    music.play().then(function () {
+      // Muted autoplay worked — unmute on first interaction
+      document.addEventListener('click', startMusic, { once: true });
+      document.addEventListener('touchstart', startMusic, { once: true });
+      document.addEventListener('keydown', startMusic, { once: true });
+    }).catch(function () {
+      // Autoplay blocked — wait for any interaction
+      music.muted = false;
+      document.addEventListener('click', function() {
+        music.play().catch(function(e) { console.log('play error:', e); });
+      }, { once: true });
+      document.addEventListener('touchstart', function() {
+        music.play().catch(function(e) { console.log('play error:', e); });
+      }, { once: true });
+    });
   });
 </script>
 
